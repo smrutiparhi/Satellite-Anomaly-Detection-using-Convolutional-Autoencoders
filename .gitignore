@@ -41,3 +41,14 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Local model artifacts and datasets
+.venv/
+__pycache__/
+*.pyc
+*.pth
+!satellite_anomaly_detection/models/best_autoencoder.pth
+*.tmp
+*.scores.npz
+satellite_anomaly_detection/data/
+EuroSAT_RGB/
