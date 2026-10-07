@@ -104,6 +104,10 @@ class PipelineTests(unittest.TestCase):
         with patch.dict(os.environ, {"SATELLITE_MODEL_PATH": str(self.checkpoint)}):
             with TestClient(app) as client:
                 self.assertEqual(client.get("/health").status_code, 200)
+                metadata = client.get("/model").json()
+                self.assertEqual(metadata["threshold"], .1)
+                self.assertEqual(metadata["parameters"], 78235)
+                self.assertNotIn("model_state_dict", metadata)
                 self.assertEqual(client.post("/analyze", files={"file": ("bad.png", b"bad")}).status_code, 400)
                 for value in ("0", "-1", "nan", "inf"):
                     self.assertEqual(client.post(f"/analyze?threshold={value}", files={"file": ("x.png", image.getvalue())}).status_code, 422)
@@ -121,6 +125,7 @@ class PipelineTests(unittest.TestCase):
         with patch.dict(os.environ, {"SATELLITE_MODEL_PATH": str(self.root / "absent.pth")}):
             with TestClient(app) as client:
                 self.assertEqual(client.get("/health").status_code, 503)
+                self.assertEqual(client.get("/model").status_code, 503)
                 self.assertEqual(client.post("/analyze", files={"file": ("x.png", b"x")}).status_code, 503)
 
     def test_train_calibrate_reload_evaluate(self):

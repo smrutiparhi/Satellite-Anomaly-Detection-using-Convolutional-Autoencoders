@@ -60,7 +60,7 @@ For an upload UI:
 python -m streamlit run satellite_anomaly_detection/app.py
 ```
 
-The Expo app at the repository root remains a starter app; it is not wired to this API. Use the API documentation or Streamlit for model inference.
+The React dashboard in `frontend/` is connected to this API. Run `npm --prefix frontend install` and `npm run dev` from the repository root, then open http://127.0.0.1:3000.
 
 ## Tests
 

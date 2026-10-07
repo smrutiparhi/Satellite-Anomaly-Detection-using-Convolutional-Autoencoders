@@ -1,51 +1,20 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Dependencies and frontend builds
 node_modules/
-
-# Expo
-.expo/
 dist/
-web-build/
-expo-env.d.ts
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
+# Logs and local configuration
+*.log
+.env*.local
 .DS_Store
 *.pem
-
-# local env files
-.env*.local
-
-# typescript
 *.tsbuildinfo
 
-app-example
-
-# generated native folders
-/ios
-/android
-
-# Local model artifacts and datasets
+# Python environments and caches
 .venv/
 __pycache__/
 *.pyc
+
+# Local model artifacts and datasets
 *.pth
 !satellite_anomaly_detection/models/best_autoencoder.pth
 *.tmp

@@ -85,3 +85,19 @@ def health():
         raise HTTPException(503, "Calibrated model unavailable")
     return {"status": "ok", "model_loaded": True, "threshold": detector.threshold,
             "architecture": detector.metadata["architecture"]}
+
+
+@app.get("/model")
+def model_details():
+    detector = app.state.detector
+    if detector is None:
+        raise HTTPException(503, "Calibrated model unavailable")
+    metadata = detector.metadata
+    manifest = metadata.get("manifest", {})
+    return {"architecture": metadata["architecture"], "threshold": detector.threshold,
+            "parameters": sum(p.numel() for p in detector.model.parameters()),
+            "image_size": metadata.get("image_size", 128),
+            "best_epoch": metadata.get("best_epoch"),
+            "normal_class": manifest.get("normal_class", "Unknown"),
+            "anomaly_class": manifest.get("anomaly_class", "Unknown"),
+            "history": metadata.get("history", [])}
