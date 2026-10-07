@@ -26,7 +26,9 @@ python -m uvicorn satellite_anomaly_detection.api:app --port 8000
 npm run dev
 ```
 
-Open http://127.0.0.1:3000 for uploads, reconstruction/error views, saved scan summaries, and real training curves. The dashboard uses the checkpoint threshold unless you explicitly override it. It has no sign-in requirement. To change the backend, copy `frontend/.env.example` to `frontend/.env.local` and edit `MODEL_API_URL`.
+Open http://127.0.0.1:3000 for the landing page, authentication, uploads, reconstruction/error views, saved scan summaries, and real training curves. The dashboard uses the checkpoint threshold unless you explicitly override it.
+
+Local development uses the built-in local login. To enable Google OAuth, copy `frontend/.env.example` to `frontend/.env.local`, set `VITE_ENABLE_GOOGLE_AUTH=true`, and provide `VITE_GOOGLE_CLIENT_ID`. The dashboard route is protected and unauthenticated visitors are redirected to `/login`. `MODEL_API_URL` changes the model backend used by the Vite proxy.
 
 `npm run build` checks TypeScript and creates `frontend/dist`. `npm --prefix frontend run preview` serves the build locally with the API proxy. A deployed frontend needs a reverse proxy from `/api` to the Python service.
 
@@ -54,7 +56,7 @@ The calibrated benchmark checkpoint is included, so a fresh clone can run infere
 - `satellite_anomaly_detection/`: working model, training/evaluation commands, API, Streamlit interface, and regression tests.
 - `frontend/`: React/Vite dashboard connected to the model API.
 
-The React dashboard is connected directly to real inference. The obsolete Expo starter and mock authentication flow have been removed.
+The React application includes the landing page, configurable Google OAuth with a local-development fallback, a protected dashboard route, and real model inference. The obsolete Expo starter has been removed.
 
 ## Team
 

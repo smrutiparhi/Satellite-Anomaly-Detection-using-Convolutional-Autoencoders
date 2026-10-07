@@ -7,11 +7,13 @@ import {
   Download,
   History,
   LoaderCircle,
+  LogOut,
   RefreshCw,
   Settings,
-  ShieldCheck,
+  User,
   X,
 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Line,
   LineChart,
@@ -48,6 +50,7 @@ type Scan = {
   threshold: number;
   label: string;
 };
+type UserProfile = { name?: string; email?: string; picture?: string };
 const HISTORY_KEY = "satellite-scans-v1";
 const panel = "rounded-2xl border border-zinc-800 bg-[#0a0a0a] p-6";
 const button =
@@ -90,6 +93,14 @@ function readHistory(): Scan[] {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const [user] = useState<UserProfile | null>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  });
   const [tab, setTab] = useState("scan");
   const [model, setModel] = useState<Model | null>(null);
   const [serviceError, setServiceError] = useState("");
@@ -220,7 +231,10 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#020202] text-zinc-50 font-sans md:flex">
       <aside className="md:fixed md:inset-y-0 md:w-60 bg-[#0a0a0a] border-b md:border-r border-zinc-800 z-20 flex flex-col">
-        <div className="flex items-center gap-3 p-6 border-b border-zinc-800">
+        <Link
+          to="/"
+          className="flex items-center gap-3 p-6 border-b border-zinc-800"
+        >
           <Crosshair className="text-emerald-400" />
           <div>
             <strong className="text-sm">Satellite Anomaly</strong>
@@ -228,7 +242,7 @@ export default function Dashboard() {
               Earth observation
             </p>
           </div>
-        </div>
+        </Link>
         <nav
           aria-label="Workspace"
           className="flex md:flex-col gap-2 p-3 md:p-4 overflow-x-auto"
@@ -255,12 +269,35 @@ export default function Dashboard() {
             </button>
           ))}
         </nav>
-        <div className="hidden md:block mt-auto p-6 text-xs text-zinc-500 border-t border-zinc-800">
-          <ShieldCheck size={18} className="text-emerald-500 mb-3" />
-          Local analysis workspace
-          <p className="mt-2 leading-relaxed">
-            Images are processed by your model service.
-          </p>
+        <div className="hidden md:block mt-auto p-4 text-xs text-zinc-500 border-t border-zinc-800">
+          <div className="flex items-center gap-3 p-2 mb-3">
+            {user?.picture ? (
+              <img
+                src={user.picture}
+                alt="User avatar"
+                className="w-9 h-9 rounded-full border border-zinc-700"
+              />
+            ) : (
+              <span className="w-9 h-9 rounded-full border border-zinc-700 bg-zinc-900 flex items-center justify-center">
+                <User size={16} />
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="text-zinc-200 truncate">
+                {user?.name || "Authenticated user"}
+              </p>
+              <p className="truncate mt-1">{user?.email || "Local session"}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("user");
+              navigate("/login", { replace: true });
+            }}
+            className="w-full flex items-center gap-2 rounded-lg p-2 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10"
+          >
+            <LogOut size={15} /> Sign out
+          </button>
         </div>
       </aside>
       <main className="min-w-0 flex-1 md:ml-60 p-4 md:p-8 xl:p-10">
