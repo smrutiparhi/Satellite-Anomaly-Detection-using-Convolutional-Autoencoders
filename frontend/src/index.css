@@ -56,19 +56,11 @@ html {
 .orbital-dot { width: 5px; height: 5px; border-radius: 50%; background: #6ee7b7; box-shadow: 0 0 12px #34d399; }
 .orbital-tag-bottom { bottom: 1%; left: 5%; border-left: 1px solid #6ee7b760; padding: 5px 0 5px 16px; }
 .orbital-coordinate { position: absolute; right: 4%; bottom: 5%; color: #71717a; font: 10px/1.8 var(--font-mono); text-align: right; }
-.satellite-flight { position: absolute; top: 22%; right: 8%; width: 160px; height: 80px; perspective: 600px; pointer-events: none; filter: drop-shadow(0 14px 15px #0008); animation: satellite-hover 8s ease-in-out infinite; }
-.satellite-model { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(55deg) rotateY(-20deg) rotateZ(-25deg); }
-.satellite-body { position: absolute; width: 42px; height: 48px; left: 59px; top: 16px; transform-style: preserve-3d; }
-.satellite-face { position: absolute; inset: 0; transform: translateZ(20px); background: linear-gradient(125deg, #f4e2a8, #a58a46); border: 1px solid #fff6; }
-.satellite-top { position: absolute; width: 42px; height: 40px; top: -20px; transform: rotateX(90deg); background: linear-gradient(45deg, #d2b16b, #fff0b7); border: 1px solid #ffe9a5; }
-.satellite-side { position: absolute; width: 40px; height: 48px; right: -20px; transform: rotateY(90deg); background: linear-gradient(#a18b54, #564521); border: 1px solid #ead49a80; }
-.satellite-lens { position: absolute; width: 24px; height: 24px; left: 9px; top: 12px; transform: translateZ(23px); border: 5px solid #334155; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #67e8f9, #082f49 60%); box-shadow: 0 0 0 2px #94a3b8; }
-.solar-panel { position: absolute; width: 54px; height: 64px; top: 8px; border: 2px solid #7b9db1; background-color: #123e62; background-image: repeating-linear-gradient(0deg, transparent 0 14px, #7dd3fc66 15px 16px), repeating-linear-gradient(90deg, transparent 0 15px, #7dd3fc66 16px 17px), linear-gradient(135deg, #3b82a666, transparent); box-shadow: 2px 3px 0 #132d40; }
-.solar-panel-left { left: 0; transform: rotateY(-12deg); }
-.solar-panel-right { right: 0; transform: rotateY(12deg); }
-@keyframes satellite-hover { 0%,100% { transform: translate3d(0,0,0) rotate(-3deg); } 50% { transform: translate3d(-14px,16px,24px) rotate(4deg); } }
+.satellite-flight { position: absolute; top: 14%; right: -3%; width: 245px; height: 185px; pointer-events: none; }
+.satellite-render { width: 100%; height: 100%; }
+.satellite-render canvas { display: block; width: 100%; height: 100%; }
 .imagery-depth { perspective: 1200px; }
 .imagery-card { transition: transform .45s ease, box-shadow .45s ease, border-color .45s ease; transform-style: preserve-3d; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) { .imagery-card:hover { transform: translateY(-8px) rotateX(4deg) rotateY(-3deg); border-color: #6ee7b74d; box-shadow: 0 24px 35px #0005; } }
-@media (max-width: 640px) { .satellite-flight { transform-origin: right top; scale: .75; top: 19%; right: 2%; } .orbital-tag-top { font-size: 8px; } .orbital-coordinate { font-size: 8px; } }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .satellite-flight { animation: none; } .imagery-card { transition: none; } }
+@media (max-width: 640px) { .satellite-flight { width: 190px; height: 145px; top: 12%; right: -3%; } .orbital-tag-top { font-size: 8px; } .orbital-coordinate { font-size: 8px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .imagery-card { transition: none; } }

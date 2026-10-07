@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import createGlobe from "cobe";
+
+const Satellite = lazy(() => import("./Satellite"));
 
 export default function OrbitalScene() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -74,11 +76,7 @@ export default function OrbitalScene() {
         onPointerCancel={() => { drag.current = null; }}
       />
       <div className="satellite-flight" aria-hidden="true">
-        <div className="satellite-model">
-          <div className="solar-panel solar-panel-left" />
-          <div className="satellite-body"><div className="satellite-face" /><div className="satellite-top" /><div className="satellite-side" /><div className="satellite-lens" /></div>
-          <div className="solar-panel solar-panel-right" />
-        </div>
+        <Suspense fallback={null}><Satellite /></Suspense>
       </div>
       <div className="orbital-tag orbital-tag-top"><span className="orbital-dot" /> EARTH OBSERVATION <span className="text-zinc-600">/ 01</span></div>
       <div className="orbital-tag orbital-tag-bottom">
