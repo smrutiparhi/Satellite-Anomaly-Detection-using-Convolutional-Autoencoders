@@ -12,55 +12,42 @@ export default function Login() {
   const googleAuthEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
   const useGoogleAuth = googleAuthEnabled && googleClientId.length > 0;
 
-  const loginWithMockUser = () => {
-    const mockUser = {
-      name: "Local Developer",
-      email: "local@example.test",
-      picture:
-        "https://ui-avatars.com/api/?name=Local+Developer&background=10b981&color=fff",
-    };
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    navigate("/dashboard");
-  };
+  function saveProfile(profile: { name: string; email: string; picture?: string }) {
+    try {
+      localStorage.setItem("user", JSON.stringify(profile));
+      navigate("/dashboard", { replace: true });
+    } catch {
+      setError("Browser storage is unavailable. Enable site storage to open the workspace.");
+      setIsLoading(false);
+    }
+  }
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      setError(null);
-      // Fetching user details with the access token
       try {
-        const payload = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-          },
-        );
-        const userInfo = await payload.json();
-
-        // Save user info for future use (e.g. displaying avatar in Dashboard)
-        localStorage.setItem("user", JSON.stringify(userInfo));
-
-        // Small delay for smooth transition effect
-        setTimeout(() => navigate("/dashboard"), 800);
-      } catch (err) {
-        console.error("Failed to fetch user info", err);
-        setError("Failed to retrieve user information from Google.");
+        const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!response.ok) throw new Error("Google could not verify this profile. Please sign in again.");
+        const profile = await response.json();
+        if (typeof profile.name !== "string" || typeof profile.email !== "string") {
+          throw new Error("Google returned an incomplete profile. Please sign in again.");
+        }
+        saveProfile(profile);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Unable to retrieve your Google profile.");
         setIsLoading(false);
       }
     },
-    onError: (error) => {
-      console.error("Login Failed", error);
-      const oauthErrorCode = (error as { error?: string } | null)?.error;
-
-      // Common in local/dev when a stale or deleted OAuth client ID is used.
-      if (import.meta.env.DEV && oauthErrorCode === "invalid_client") {
-        setError(
-          "Google OAuth client is invalid. Switched to local mock login in development mode.",
-        );
-        setTimeout(() => loginWithMockUser(), 800);
-        return;
-      }
-
-      setError("Google authentication was aborted or failed.");
+    onError: () => {
+      setError("Google sign-in failed. Check the OAuth configuration and try again.");
+      setIsLoading(false);
+    },
+    onNonOAuthError: (error) => {
+      setError(error.type === "popup_failed_to_open"
+        ? "The sign-in popup was blocked. Allow popups for this site and try again."
+        : "The sign-in popup was closed. Try again when ready.");
       setIsLoading(false);
     },
   });
@@ -68,24 +55,15 @@ export default function Login() {
   const handleGoogleLogin = () => {
     setIsLoading(true);
     setError(null);
-
-    // Bypass real Google auth unless explicitly enabled and configured.
     if (!useGoogleAuth) {
-      setTimeout(() => {
-        loginWithMockUser();
-      }, 1500);
+      saveProfile({ name: "Local Developer", email: "local@example.test" });
       return;
     }
-
-    // Otherwise, execute the real Google OAuth flow
-    login();
-
-    // In case popup blocked or closed and error handler doesn't catch immediately
-    setTimeout(() => {
-      if (!localStorage.getItem("user")) {
-        setIsLoading(false);
-      }
-    }, 15000);
+    try { login(); }
+    catch {
+      setError("Google sign-in is not ready. Check your connection and OAuth client configuration.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -127,8 +105,7 @@ export default function Login() {
               Welcome Back
             </h1>
             <p className="text-zinc-400 text-center font-medium max-w-[280px]">
-              Authenticate to access the high-fidelity anomaly scanning
-              dashboard.
+              Open the satellite reconstruction and novelty analysis workspace.
             </p>
           </div>
 
@@ -192,7 +169,7 @@ export default function Login() {
               <span className="flex-shrink-0 mx-4 text-xs font-mono text-zinc-500 uppercase tracking-widest">
                 {useGoogleAuth
                   ? "Google Single Sign-On"
-                  : "Local development access"}
+                  : "Local workspace access"}
               </span>
               <div className="flex-grow border-t border-zinc-800"></div>
             </div>
@@ -200,28 +177,15 @@ export default function Login() {
             <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800/80">
               <p className="text-xs text-zinc-500 leading-relaxed text-center font-medium">
                 {useGoogleAuth
-                  ? "Google authentication is enabled for this deployment. Only authorized identities can open the analysis workspace."
-                  : "Google authentication is disabled locally. Continue with the development account to test the protected dashboard."}
+                  ? "Google authentication is enabled for this deployment. Sign in to create your browser workspace profile."
+                  : "Google sign-in is not configured. Continue with a local browser profile; this is development access, not a verified Google account."}
               </p>
             </div>
           </div>
 
-          <p className="text-center text-xs text-zinc-600 font-medium mt-8 text-balance">
-            By authenticating, you agree to our{" "}
-            <a
-              href="#"
-              className="text-zinc-400 hover:text-zinc-300 underline underline-offset-2"
-            >
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a
-              href="#"
-              className="text-zinc-400 hover:text-zinc-300 underline underline-offset-2"
-            >
-              Privacy Protocol
-            </a>
-            .
+          <p className="text-center text-xs text-zinc-500 mt-8 leading-5">
+            Uploaded images are processed by the model service in memory.
+            Scan summaries are saved in this browser.
           </p>
         </motion.div>
       </div>

@@ -13,6 +13,16 @@ MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "best_autoencoder.
 ARCHITECTURES = {"legacy": ConvAutoencoder, "compact": CompactAutoencoder}
 
 
+def error_map_scale(errors, calibrated_threshold):
+    """Keep normal errors subdued while preserving detail in high-error scenes.
+
+    Colors are relative to this image, not a cross-image anomaly probability.
+    Classification overrides must not change the underlying error visualization.
+    """
+    return max(float(np.quantile(errors, .99)), 3 * calibrated_threshold,
+               float(np.finfo(np.float32).eps))
+
+
 def resolve_device(device="auto"):
     if device == "auto":
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -63,8 +73,7 @@ class AnomalyDetector:
         score = float(errors.mean())
         if not np.isfinite(score):
             raise ValueError("Model produced a non-finite score")
-        # Fixed calibration-relative scale: comparable between images, safe at zero.
-        intensity = np.clip(errors / (3 * boundary), 0, 1)
+        intensity = np.clip(errors / error_map_scale(errors, self.threshold), 0, 1)
         heatmap = cv2.applyColorMap((intensity * 255).astype(np.uint8), cv2.COLORMAP_JET)
         original = tensor[0].cpu().permute(1, 2, 0).numpy()
         reconstruction = reconstructed[0].cpu().permute(1, 2, 0).numpy()

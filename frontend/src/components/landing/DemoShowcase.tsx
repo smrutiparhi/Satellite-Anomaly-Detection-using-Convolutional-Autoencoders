@@ -54,7 +54,7 @@ export default function DemoShowcase() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-white/8 px-2 pb-4">
             <div className="flex items-center gap-2 text-sm font-medium text-zinc-200">
               <ScanSearch size={17} className="text-emerald-400" />
-              Industrial_1.jpg
+              Illustrative analysis preview
             </div>
             <div className="flex items-center gap-2 rounded-full bg-amber-400/10 px-3 py-1.5 text-xs text-amber-300">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />

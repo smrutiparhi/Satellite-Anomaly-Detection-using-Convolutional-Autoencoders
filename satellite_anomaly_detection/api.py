@@ -10,10 +10,10 @@ import cv2
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
 
-from .src.detect import AnomalyDetector, MODEL_PATH
+from .src.detect import AnomalyDetector, MODEL_PATH, error_map_scale
 
 MAX_BYTES = 10 * 1024 * 1024
 MAX_PIXELS = 16_000_000
@@ -33,7 +33,7 @@ async def lifespan(app):
 
 app = FastAPI(title="Satellite Anomaly Detection API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware,
-                   allow_origins=os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:8081").split(","),
+                   allow_origins=os.environ.get("CORS_ORIGINS", "http://127.0.0.1:3000,http://localhost:3000,http://localhost:8081").split(","),
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
@@ -47,10 +47,12 @@ def encode_image(array):
 def analyze_contents(contents, detector, threshold):
     try:
         with Image.open(io.BytesIO(contents)) as opened:
+            if opened.format not in {"JPEG", "PNG", "WEBP"}:
+                raise HTTPException(415, "Choose a JPEG, PNG, or WebP image")
             if opened.width * opened.height > MAX_PIXELS:
                 raise HTTPException(413, "Image exceeds 16 million pixels")
             opened.load()
-            image = opened.copy()
+            image = ImageOps.exif_transpose(opened).convert("RGB")
     except HTTPException:
         raise
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
@@ -60,6 +62,11 @@ def analyze_contents(contents, detector, threshold):
     rgb = lambda value: cv2.cvtColor((np.clip(value, 0, 1) * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
     return {"score": score, "label": label, "isAnomaly": label == "Anomaly",
             "threshold": detector.threshold if threshold is None else threshold,
+            "input": {"width": image.width, "height": image.height,
+                      "model_size": detector.metadata.get("image_size", 128)},
+            "heatmapScale": {"min": 0,
+                             "max": error_map_scale(np.square(original - reconstruction).mean(axis=2), detector.threshold),
+                             "mode": "per-image"},
             "images": {"original": encode_image(rgb(original)),
                        "reconstructed": encode_image(rgb(reconstruction)),
                        "heatmap": encode_image(heatmap)}}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import ImageDropzone from "../components/dashboard/ImageDropzone";
 import { cn } from "../utils/cn";
+import { readUser } from "../utils/session";
 
 type Result = {
   score: number;
@@ -31,6 +32,8 @@ type Result = {
   isAnomaly: boolean;
   threshold: number;
   images: { original: string; reconstructed: string; heatmap: string };
+  input?: { width: number; height: number; model_size: number };
+  heatmapScale?: { min: number; max: number; mode: string };
 };
 type Model = {
   architecture: string;
@@ -50,24 +53,35 @@ type Scan = {
   threshold: number;
   label: string;
 };
-type UserProfile = { name?: string; email?: string; picture?: string };
 const HISTORY_KEY = "satellite-scans-v1";
 const panel = "rounded-2xl border border-zinc-800 bg-[#0a0a0a] p-6";
 const button =
   "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api${path}`, {
-    ...init,
-    signal: AbortSignal.timeout(60000),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`/api${path}`, {
+      ...init,
+      signal: AbortSignal.timeout(60000),
+    });
+  } catch (error) {
+    throw new Error(error instanceof Error && error.name === "TimeoutError"
+      ? "The model service timed out. Retry the connection and analysis."
+      : "Cannot reach the model service. Start the Python API and retry the connection.");
+  }
   if (!response.ok) {
     const error = await response.json().catch(() => null);
     throw new Error(
       typeof error?.detail === "string"
         ? error.detail
-        : `Model service returned ${response.status}. Check that the API is running.`,
+        : Array.isArray(error?.detail)
+          ? error.detail.map((item: { msg: string }) => item.msg).join("; ")
+          : `Model service returned ${response.status}. Check that the Python API is running.`,
     );
+  }
+  if (!response.headers.get("Content-Type")?.includes("application/json")) {
+    throw new Error("The API returned a page instead of model data. Check the /api proxy configuration.");
   }
   return response.json();
 }
@@ -80,6 +94,7 @@ function readHistory(): Scan[] {
           .filter(
             (item) =>
               typeof item?.score === "number" &&
+              typeof item?.id === "string" &&
               typeof item?.name === "string" &&
               typeof item?.time === "string" &&
               typeof item?.threshold === "number" &&
@@ -94,13 +109,11 @@ function readHistory(): Scan[] {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [user] = useState<UserProfile | null>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user") || "null");
-    } catch {
-      return null;
-    }
-  });
+  const [user] = useState(readUser);
+  const selection = useRef(0);
+  const [connecting, setConnecting] = useState(true);
+  const [loadingSample, setLoadingSample] = useState(false);
+  const [settingsError, setSettingsError] = useState("");
   const [tab, setTab] = useState("scan");
   const [model, setModel] = useState<Model | null>(null);
   const [serviceError, setServiceError] = useState("");
@@ -117,6 +130,7 @@ export default function Dashboard() {
   const [opacity, setOpacity] = useState(65);
 
   async function refreshModel() {
+    setConnecting(true);
     try {
       const data = await request<Model>("/model");
       setModel(data);
@@ -126,6 +140,8 @@ export default function Dashboard() {
       setServiceError(
         e instanceof Error ? e.message : "Model service unavailable",
       );
+    } finally {
+      setConnecting(false);
     }
   }
   useEffect(() => {
@@ -141,10 +157,12 @@ export default function Dashboard() {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  function selectFile(next: File) {
+  async function selectFile(next: File) {
     if (busy) return;
+    const current = ++selection.current;
     setError("");
-    if (!["image/jpeg", "image/png", "image/webp"].includes(next.type)) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(next.type)
+      && !(next.type === "" && /\.(jpe?g|png|webp)$/i.test(next.name))) {
       setError("Choose a JPEG, PNG, or WebP image.");
       return;
     }
@@ -152,9 +170,38 @@ export default function Dashboard() {
       setError("Image must be no larger than 10 MiB.");
       return;
     }
+    try {
+      const decoded = await createImageBitmap(next);
+      const pixels = decoded.width * decoded.height;
+      decoded.close();
+      if (pixels > 16_000_000) throw new Error("Image exceeds 16 million pixels. Choose a smaller tile.");
+    } catch (error) {
+      if (current === selection.current) setError(error instanceof Error && error.message.includes("million pixels")
+        ? error.message : "This file could not be decoded. Choose a valid JPEG, PNG, or WebP image.");
+      return;
+    }
+    if (current !== selection.current) return;
     setFile(next);
     setResult(null);
     setLogs([]);
+  }
+  async function loadSample(kind: "forest" | "industrial") {
+    setLoadingSample(true);
+    setError("");
+    try {
+      const response = await fetch(`/samples/${kind}.jpg`);
+      if (!response.ok) throw new Error("Sample image unavailable. Upload your own image instead.");
+      await selectFile(new File([await response.blob()], `EuroSAT-${kind}.jpg`, { type: "image/jpeg" }));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to load sample image.");
+    } finally {
+      setLoadingSample(false);
+    }
+  }
+  function signOut() {
+    try { localStorage.removeItem("user"); }
+    catch { setSettingsError("Browser storage is unavailable. Unable to end the local session."); return; }
+    navigate("/login", { replace: true });
   }
   async function analyze() {
     if (!file || busy) return;
@@ -185,7 +232,8 @@ export default function Dashboard() {
         `Threshold: ${prediction.threshold.toFixed(6)} · ${prediction.label}`,
       ]);
       const scan = {
-        id: crypto.randomUUID(),
+        id: typeof crypto.randomUUID === "function" ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         name: file.name,
         time: new Date().toISOString(),
         score: prediction.score,
@@ -291,8 +339,7 @@ export default function Dashboard() {
           </div>
           <button
             onClick={() => {
-              localStorage.removeItem("user");
-              navigate("/login", { replace: true });
+              signOut();
             }}
             className="w-full flex items-center gap-2 rounded-lg p-2 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10"
           >
@@ -317,6 +364,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={refreshModel}
+              disabled={connecting}
               className="flex items-center gap-2 text-xs text-zinc-400"
             >
               <span
@@ -325,8 +373,8 @@ export default function Dashboard() {
                   model ? "bg-emerald-400" : "bg-amber-400",
                 )}
               />
-              {model ? "Model connected" : "Model unavailable"}
-              <RefreshCw size={14} />
+              {connecting ? "Connecting to model…" : model ? "Model connected" : "Model unavailable"}
+              <RefreshCw size={14} className={connecting ? "animate-spin" : ""} />
             </button>
           </header>
           {serviceError && (
@@ -429,7 +477,22 @@ export default function Dashboard() {
                     </div>
                   )}
                   {!file ? (
-                    <ImageDropzone onImageSelect={selectFile} />
+                    <>
+                      <ImageDropzone onImageSelect={selectFile} />
+                      <section className={panel}>
+                        <h2 className="text-sm font-semibold">Try a real benchmark image</h2>
+                        <p className="mt-2 text-xs leading-5 text-zinc-400">Held-out EuroSAT tiles. Forest is the learned normal class; Industrial is unfamiliar. Load a tile, then select Analyze image.</p>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          {(["forest", "industrial"] as const).map((kind) => (
+                            <button key={kind} disabled={loadingSample || busy} onClick={() => loadSample(kind)} className={cn(button, "border border-zinc-700 hover:bg-zinc-900 capitalize")}>
+                              <img src={`/samples/${kind}.jpg`} alt="" className="h-10 w-10 rounded object-cover" />
+                              {kind} sample
+                            </button>
+                          ))}
+                        </div>
+                        {loadingSample && <p role="status" className="mt-3 text-xs text-zinc-400">Loading sample…</p>}
+                      </section>
+                    </>
                   ) : (
                     <section className={panel}>
                       <div className="flex items-center justify-between gap-3 mb-5">
@@ -446,6 +509,7 @@ export default function Dashboard() {
                           aria-label="Remove image"
                           disabled={busy}
                           onClick={() => {
+                            selection.current++;
                             setFile(null);
                             setResult(null);
                             setLogs([]);
@@ -527,6 +591,13 @@ export default function Dashboard() {
                           {opacity}%
                         </label>
                       )}
+                      {result && view === "heatmap" && (
+                        <div className="mt-4 text-xs text-zinc-400">
+                          <div className="h-2 rounded-full bg-[linear-gradient(to_right,#000080,#0080ff,#00ffff,#ffff00,#ff0000,#800000)]" />
+                          <div className="mt-2 flex justify-between"><span>Low error</span><span>High error</span></div>
+                          <p className="mt-2 leading-5">Colors are scaled per image to reveal detail. Compare reconstruction MSE across scans; this map does not identify objects or hazards.</p>
+                        </div>
+                      )}
                       <div className="flex flex-wrap justify-between items-center gap-3 mt-5">
                         <p className="text-xs text-zinc-500">
                           {result
@@ -549,6 +620,14 @@ export default function Dashboard() {
                           <ArrowRight size={16} />
                         </button>
                       </div>
+                    </section>
+                  )}
+                  {result && (
+                    <section className={cn(panel, "!p-5")}>
+                      <h2 className="font-semibold">{result.isAnomaly ? "Unfamiliar compared with Forest training imagery" : "Within the learned Forest reconstruction range"}</h2>
+                      <p className="mt-2 text-sm leading-6 text-zinc-400">{result.isAnomaly ? "The reconstruction error exceeds the selected threshold. This is a novelty result, not a recognized object or a confirmed hazard." : "The reconstruction error falls within the selected threshold. This does not guarantee that the scene is safe or contains no unusual objects."}</p>
+                      {result.input && <p className="mt-3 text-xs text-zinc-500">Source: {result.input.width} × {result.input.height} · Processed: {result.input.model_size} × {result.input.model_size} RGB</p>}
+                      {result.input && Math.max(result.input.width, result.input.height) > 512 && <p className="mt-3 text-xs leading-5 text-amber-300">This large scene was resized to a single model tile. Small features may be lost; use a crop resembling the sample tiles for a more useful comparison.</p>}
                     </section>
                   )}
                   {result && (
@@ -695,8 +774,10 @@ export default function Dashboard() {
               <h2 className="font-semibold mb-4">Local workspace</h2>
               <p className="text-sm text-zinc-400 leading-relaxed">
                 The dashboard uses the local model service. Uploads are
-                processed in memory. This workspace has no sign-in requirement.
+                processed in memory. The local profile is browser-based development access; Google sign-in requires a configured OAuth client. It does not secure the Python API.
               </p>
+              {settingsError && <p role="alert" className="mt-4 text-sm text-rose-300">{settingsError}</p>}
+              <button onClick={signOut} className={cn(button, "mt-5 border border-zinc-700 hover:bg-zinc-900")}><LogOut size={16} />Sign out</button>
               <div className="mt-6 border-t border-zinc-800 pt-6">
                 <h3 className="text-sm font-semibold">Browser history</h3>
                 <p className="text-xs text-zinc-500 my-3">
@@ -705,11 +786,12 @@ export default function Dashboard() {
                 </p>
                 <button
                   onClick={() => {
+                    setSettingsError("");
                     try {
                       localStorage.removeItem(HISTORY_KEY);
                       setHistory([]);
                     } catch {
-                      setError("Browser storage is unavailable.");
+                      setSettingsError("Browser storage is unavailable.");
                     }
                   }}
                   className={cn(

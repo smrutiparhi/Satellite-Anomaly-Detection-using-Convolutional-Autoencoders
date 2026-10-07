@@ -28,6 +28,12 @@ npm run dev
 
 Open http://127.0.0.1:3000 for the landing page, authentication, uploads, reconstruction/error views, saved scan summaries, and real training curves. The dashboard uses the checkpoint threshold unless you explicitly override it.
 
+Use **Forest sample** or **Industrial sample** in the upload workspace to try real held-out images, then click **Analyze image**. Uploads must be valid JPEG, PNG, or WebP files, up to 10 MiB and 16 million pixels. Results explain novelty relative to Forest training imagery; this is not general image recognition.
+
+The error map uses an image-specific 99th-percentile scale, with a minimum scale of three times the saved calibrated threshold, to avoid saturating unfamiliar scenes. Changing a classification threshold does not change the heatmap. Color intensities should not be compared across images; compare MSE scores instead.
+
+Run `npm --prefix frontend test` for dashboard/login interaction checks, and `python -m unittest satellite_anomaly_detection.tests.test_pipeline -v` for model and API regression tests.
+
 Local development uses the built-in local login. To enable Google OAuth, copy `frontend/.env.example` to `frontend/.env.local`, set `VITE_ENABLE_GOOGLE_AUTH=true`, and provide `VITE_GOOGLE_CLIENT_ID`. The dashboard route is protected and unauthenticated visitors are redirected to `/login`. `MODEL_API_URL` changes the model backend used by the Vite proxy.
 
 `npm run build` checks TypeScript and creates `frontend/dist`. `npm --prefix frontend run preview` serves the build locally with the API proxy. A deployed frontend needs a reverse proxy from `/api` to the Python service.

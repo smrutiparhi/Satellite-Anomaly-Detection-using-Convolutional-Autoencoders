@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 
 from satellite_anomaly_detection.api import app
 from satellite_anomaly_detection.src.dataset import get_dataloaders
-from satellite_anomaly_detection.src.detect import AnomalyDetector
+from satellite_anomaly_detection.src.detect import AnomalyDetector, error_map_scale
 from satellite_anomaly_detection.src.model import CompactAutoencoder
 from satellite_anomaly_detection.src.train import train_model
 from satellite_anomaly_detection.src.evaluate import evaluate_model
@@ -120,6 +120,38 @@ class PipelineTests(unittest.TestCase):
                 self.assertEqual([r["label"] for r in results], ["Anomaly", "Normal"])
                 self.assertEqual(app.state.detector.threshold, .1)
                 self.assertTrue(results[0]["images"]["heatmap"].startswith("data:image/png;base64,"))
+                self.assertEqual(results[0]["images"]["heatmap"], results[1]["images"]["heatmap"])
+                self.assertEqual(results[0]["input"], {"width": 32, "height": 32, "model_size": 128})
+                gif = io.BytesIO()
+                Image.new("RGB", (12, 20)).save(gif, format="GIF")
+                self.assertEqual(client.post("/analyze", files={"file": ("x.jpg", gif.getvalue())}).status_code, 415)
+                oriented = io.BytesIO()
+                exif = Image.Exif()
+                exif[274] = 6
+                Image.new("RGB", (12, 20)).save(oriented, format="JPEG", exif=exif)
+                response = client.post("/analyze", files={"file": ("oriented.jpg", oriented.getvalue())}).json()
+                self.assertEqual((response["input"]["width"], response["input"]["height"]), (20, 12))
+
+    def test_heatmap_preserves_high_error_detail(self):
+        errors = np.linspace(0, .4, 128 * 128, dtype=np.float32).reshape(128, 128)
+        scale = error_map_scale(errors, .000483)
+        self.assertGreater(scale, .39)
+        self.assertLess(float((errors >= scale).mean()), .02)
+        self.assertGreater(error_map_scale(np.zeros((8, 8)), .000483), 0)
+
+    def test_shipped_checkpoint_on_held_out_sample_images(self):
+        detector = AnomalyDetector(device="cpu")
+        root = Path(__file__).resolve().parents[2] / "frontend" / "public" / "samples"
+        scores = []
+        for name, expected in (("forest", "Normal"), ("industrial", "Anomaly")):
+            score, label, original, reconstruction, heatmap = detector.predict(root / f"{name}.jpg")
+            self.assertEqual(label, expected)
+            self.assertEqual(original.shape, (128, 128, 3))
+            self.assertEqual(reconstruction.shape, original.shape)
+            self.assertEqual(heatmap.shape, original.shape)
+            scores.append(score)
+        self.assertLess(scores[0], detector.threshold)
+        self.assertGreater(scores[1], detector.threshold)
 
     def test_unavailable_model_health_and_prediction(self):
         with patch.dict(os.environ, {"SATELLITE_MODEL_PATH": str(self.root / "absent.pth")}):

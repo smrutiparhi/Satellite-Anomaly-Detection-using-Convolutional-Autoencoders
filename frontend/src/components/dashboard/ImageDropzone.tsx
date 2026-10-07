@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Upload, Image as ImageIcon } from "lucide-react";
+import { Upload } from "lucide-react";
 import { cn } from "../../utils/cn";
 
 interface ImageDropzoneProps {
@@ -31,6 +31,7 @@ export default function ImageDropzone({ onImageSelect }: ImageDropzoneProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       onImageSelect(e.target.files[0]);
+      e.target.value = "";
     }
   };
 
@@ -54,7 +55,9 @@ export default function ImageDropzone({ onImageSelect }: ImageDropzoneProps) {
           fileInputRef.current?.click();
         }
       }}
-      onClick={() => fileInputRef.current?.click()}
+      onClick={(event) => {
+        if (event.target !== fileInputRef.current) fileInputRef.current?.click();
+      }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}

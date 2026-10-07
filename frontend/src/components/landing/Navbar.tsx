@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, Crosshair, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "../../utils/cn";
+import { readUser } from "../../utils/session";
 
 const links = [
   ["Product", "#product"],
@@ -13,7 +14,7 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const authenticated = Boolean(localStorage.getItem("user"));
+  const authenticated = Boolean(readUser());
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 16);
@@ -82,7 +83,7 @@ export default function Navbar() {
           </div>
 
           <button
-            className="shrink-0 rounded-lg p-2 text-zinc-300 md:hidden"
+            className="shrink-0 rounded-lg p-2 text-zinc-300 lg:hidden"
             onClick={() => setOpen(!open)}
             aria-expanded={open}
             aria-label="Toggle navigation"
@@ -92,7 +93,7 @@ export default function Navbar() {
         </div>
 
         {open && (
-          <div className="border-t border-white/8 py-4 md:hidden">
+          <div className="border-t border-white/8 py-4 lg:hidden">
             <div className="grid gap-1">
               {links.map(([label, href]) => (
                 <a
