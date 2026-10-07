@@ -1,5 +1,7 @@
-import { ArrowRight, CheckCircle2, ScanLine, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+import OrbitalScene from "./OrbitalScene";
 
 const facts = [
   ["128 × 128", "RGB input"],
@@ -62,63 +64,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="relative min-w-0 max-w-full overflow-hidden rounded-[28px]">
-          <div className="absolute -inset-8 -z-10 rounded-full bg-emerald-400/10 blur-3xl" />
-          <div className="overflow-hidden rounded-[28px] border border-white/12 bg-[#0b0e0d] shadow-2xl shadow-black/60">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/8 px-5 py-4">
-              <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <ScanLine size={15} className="text-emerald-400" />
-                Live reconstruction
-              </div>
-              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-emerald-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Model online
-              </div>
-            </div>
-            <div className="grid gap-4 p-4 sm:grid-cols-[1fr_155px]">
-              <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-white/8 bg-[radial-gradient(circle_at_68%_34%,rgba(249,115,22,.85)_0_4%,transparent_5%),radial-gradient(circle_at_54%_59%,rgba(239,68,68,.8)_0_7%,transparent_8%),linear-gradient(142deg,#10251d_0%,#1b3b2b_28%,#172f24_29%,#294334_50%,#101d18_51%,#20382b_72%,#0c1713_100%)]">
-                <div className="absolute inset-0 opacity-70 [background-image:repeating-linear-gradient(25deg,transparent_0_18px,rgba(255,255,255,.035)_19px_20px)]" />
-                <div className="absolute left-[47%] top-[51%] h-28 w-36 rounded-full border border-orange-300/50 bg-red-500/15 blur-sm" />
-                <div className="absolute inset-x-4 bottom-4 flex items-center justify-between rounded-xl border border-white/10 bg-black/55 px-3 py-2 backdrop-blur-md">
-                  <span className="text-xs text-zinc-300">
-                    Reconstruction error overlay
-                  </span>
-                  <span className="text-xs font-mono text-amber-300">
-                    0.054032
-                  </span>
-                </div>
-              </div>
-              <div className="grid content-start gap-3">
-                <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[.07] p-4">
-                  <p className="text-[10px] uppercase tracking-widest text-amber-200/70">
-                    Classification
-                  </p>
-                  <p className="mt-3 text-lg font-semibold text-amber-300">
-                    Anomaly
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/8 bg-white/[.025] p-4">
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">
-                    Threshold
-                  </p>
-                  <p className="mt-3 font-mono text-sm text-zinc-200">
-                    0.000483
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/8 bg-white/[.025] p-4">
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">
-                    Architecture
-                  </p>
-                  <p className="mt-3 text-sm text-zinc-200">Compact CAE</p>
-                </div>
-                <div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/[.05] p-4 text-xs leading-5 text-emerald-100/70">
-                  <Sparkles size={15} className="mb-2 text-emerald-300" />
-                  Heatmaps expose reconstruction error, not a hazard label.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <OrbitalScene />
       </div>
 
       <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 divide-y divide-white/8 border-y border-white/8 bg-white/[.018] sm:grid-cols-3 sm:divide-x sm:divide-y-0">

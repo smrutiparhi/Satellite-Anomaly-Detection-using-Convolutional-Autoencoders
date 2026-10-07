@@ -61,11 +61,11 @@ export default function DemoShowcase() {
               Score exceeds threshold
             </div>
           </div>
-          <div className="grid gap-3 lg:grid-cols-3">
+          <div className="imagery-depth grid gap-3 lg:grid-cols-3">
             {panels.map((panel, index) => (
               <div
                 key={panel.title}
-                className="overflow-hidden rounded-2xl border border-white/8 bg-black/20"
+                className="imagery-card overflow-hidden rounded-2xl border border-white/8 bg-black/20"
               >
                 <div className={`relative h-64 ${panel.style}`}>
                   <div className="absolute inset-0 opacity-35 [background-image:repeating-linear-gradient(20deg,transparent_0_16px,rgba(255,255,255,.08)_17px_18px)]" />
