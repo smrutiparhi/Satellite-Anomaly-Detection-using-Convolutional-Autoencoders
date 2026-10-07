@@ -1,143 +1,127 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ArrowUpRight, Crosshair, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Crosshair, Menu, X } from "lucide-react";
 import { cn } from "../../utils/cn";
 
+const links = [
+  ["Product", "#product"],
+  ["Capabilities", "#features"],
+  ["Workflow", "#how-it-works"],
+  ["Results", "#benchmark"],
+];
+
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const authenticated = Boolean(localStorage.getItem("user"));
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const update = () => setScrolled(window.scrollY > 16);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
   }, []);
 
   return (
-    <nav
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-transparent",
-        isScrolled
-          ? "bg-[#0a0a0a]/80 backdrop-blur-xl border-zinc-800/80 shadow-lg"
-          : "bg-transparent",
-      )}
-    >
-      <div className="container mx-auto px-6 h-20 flex items-center justify-between max-w-7xl">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 p-2 rounded-xl border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:shadow-[0_0_25px_rgba(16,185,129,0.25)] transition-all">
-            <Crosshair className="w-5 h-5 text-emerald-400 group-hover:rotate-90 transition-transform duration-500" />
-          </div>
-          <div>
-            <span className="font-semibold tracking-tight text-lg text-zinc-100 hidden sm:block">
-              Satellite Anomaly
+    <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6">
+      <div
+        className={cn(
+          "mx-auto w-full max-w-7xl rounded-2xl border px-4 transition-all duration-300 md:px-5",
+          scrolled || open
+            ? "border-white/10 bg-[#080b0a]/90 shadow-2xl shadow-black/30 backdrop-blur-xl"
+            : "border-transparent bg-transparent",
+        )}
+      >
+        <div className="flex h-16 items-center justify-between">
+          <Link
+            to="/"
+            className="flex min-w-0 items-center gap-3"
+            aria-label="Satellite Anomaly home"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-xl border border-emerald-400/25 bg-emerald-400/10 text-emerald-300">
+              <Crosshair size={18} />
             </span>
+            <span className="leading-none">
+              <strong className="block text-sm font-semibold tracking-tight text-white">
+                Satellite Anomaly
+              </strong>
+              <span className="mt-1 block text-[9px] font-mono uppercase tracking-[0.25em] text-emerald-400">
+                Earth intelligence
+              </span>
+            </span>
+          </Link>
+
+          <div className="hidden items-center gap-7 lg:flex">
+            {links.map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                className="text-sm text-zinc-400 transition hover:text-white"
+              >
+                {label}
+              </a>
+            ))}
           </div>
-        </Link>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-300">
-          <a href="#demo" className="hover:text-emerald-400 transition-colors">
-            Demo
-          </a>
-          <a
-            href="#features"
-            className="hover:text-emerald-400 transition-colors"
-          >
-            Features
-          </a>
-          <a
-            href="#how-it-works"
-            className="hover:text-emerald-400 transition-colors"
-          >
-            How it Works
-          </a>
-          <a
-            href="#pricing"
-            className="hover:text-emerald-400 transition-colors"
-          >
-            Pricing
-          </a>
-        </div>
-
-        {/* CTA */}
-        <div className="hidden md:flex items-center gap-4">
-          <Link
-            to="/login"
-            className="text-sm font-medium text-zinc-300 hover:text-white transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/dashboard"
-            className="text-sm font-medium bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2.5 rounded-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-          >
-            Go to App
-          </Link>
-        </div>
-
-        {/* Mobile menu button */}
-        <button
-          className="md:hidden text-zinc-300 hover:text-white"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-20 left-0 right-0 bg-[#0a0a0a] border-b border-zinc-800/80 shadow-2xl p-6 flex flex-col gap-6">
-          <a
-            href="#demo"
-            className="text-zinc-300 font-medium hover:text-emerald-400"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Demo
-          </a>
-          <a
-            href="#features"
-            className="text-zinc-300 font-medium hover:text-emerald-400"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Features
-          </a>
-          <a
-            href="#how-it-works"
-            className="text-zinc-300 font-medium hover:text-emerald-400"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            How it Works
-          </a>
-          <a
-            href="#pricing"
-            className="text-zinc-300 font-medium hover:text-emerald-400"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Pricing
-          </a>
-          <hr className="border-zinc-800" />
-          <div className="flex flex-col gap-4 pt-2">
-            <Link
-              to="/login"
-              className="text-center font-medium text-zinc-300 hover:text-emerald-400 py-2"
-            >
-              Sign In
-            </Link>
+          <div className="hidden items-center gap-3 md:flex">
+            {!authenticated && (
+              <Link
+                to="/login"
+                className="px-3 py-2 text-sm text-zinc-300 transition hover:text-white"
+              >
+                Sign in
+              </Link>
+            )}
             <Link
               to="/dashboard"
-              className="text-center font-medium bg-emerald-500 hover:bg-emerald-400 text-white py-3 rounded-lg shadow-lg"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-300"
             >
-              Go to App
+              {authenticated ? "Return to workspace" : "Open workspace"}
+              <ArrowUpRight size={15} />
             </Link>
           </div>
+
+          <button
+            className="shrink-0 rounded-lg p-2 text-zinc-300 md:hidden"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-label="Toggle navigation"
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
-      )}
+
+        {open && (
+          <div className="border-t border-white/8 py-4 md:hidden">
+            <div className="grid gap-1">
+              {links.map(([label, href]) => (
+                <a
+                  key={href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-white/5"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/8 pt-4">
+              <Link
+                to="/login"
+                className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm text-zinc-200"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/dashboard"
+                className="rounded-xl bg-emerald-400 px-4 py-3 text-center text-sm font-semibold text-zinc-950"
+              >
+                Workspace
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

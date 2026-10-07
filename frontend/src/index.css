@@ -9,9 +9,21 @@
 }
 
 body {
-  background-color: #09090b; /* zinc-950 */
-  color: #fafafa; /* zinc-50 */
+  margin: 0;
+  background-color: #050706;
+  color: #fafafa;
   font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(52, 211, 153, 0.25);
+  color: white;
 }
 
 /* Custom scrollbar for a technical feel */

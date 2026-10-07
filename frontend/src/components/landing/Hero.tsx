@@ -1,219 +1,138 @@
-import React from "react";
-import { motion } from "motion/react";
-import {
-  ArrowRight,
-  Crosshair,
-  ChevronRight,
-  Activity,
-  Satellite,
-  ShieldAlert,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, ScanLine, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const facts = [
+  ["128 × 128", "RGB input"],
+  ["78,235", "parameters"],
+  ["0.000483", "saved threshold"],
+];
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden pt-20">
-      {/*
-        ========================================
-        Dynamic Animated Background Elements
-        ========================================
-      */}
-      <div className="absolute inset-0 z-0">
-        {/* Core Glow Orbs */}
-        <motion.div
-          animate={{ x: [0, 50, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[15%] left-[20%] w-[400px] h-[400px] bg-emerald-500/20 rounded-full blur-[120px] opacity-70 mix-blend-screen"
-        />
-        <motion.div
-          animate={{ x: [0, -60, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-          className="absolute bottom-[20%] right-[15%] w-[500px] h-[500px] bg-teal-600/20 rounded-full blur-[140px] opacity-60 mix-blend-screen"
-        />
-        <motion.div
-          animate={{ x: [0, 30, 0], y: [0, 40, 0], scale: [1, 1.1, 1] }}
-          transition={{
-            duration: 9,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[600px] h-[600px] bg-cyan-900/40 rounded-full blur-[150px] opacity-40 mix-blend-screen pointer-events-none"
-        />
+    <section className="relative overflow-hidden border-b border-white/5 px-6 pb-20 pt-32 md:pb-28 md:pt-40">
+      <div className="absolute inset-0 -z-20 bg-[#050706]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(16,185,129,.13),transparent_34%),radial-gradient(circle_at_86%_30%,rgba(34,211,238,.09),transparent_28%)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.025)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:linear-gradient(to_bottom,black,transparent_88%)]" />
 
-        {/* Orbital Satellite Alpha - Left to Right */}
-        <motion.div
-          animate={{
-            left: ["-30%", "120%"],
-            top: ["20%", "0%"],
-            rotate: [15, -10],
-          }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="absolute z-0 opacity-20 pointer-events-none drop-shadow-[0_0_80px_rgba(16,185,129,0.4)]"
-        >
-          <Satellite
-            className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] text-zinc-500/40"
-            strokeWidth={0.5}
-          />
-        </motion.div>
-
-        {/* Orbital Satellite Beta - Right to Left */}
-        <motion.div
-          animate={{
-            right: ["-30%", "120%"],
-            top: ["60%", "30%"],
-            rotate: [-20, 10],
-          }}
-          transition={{
-            duration: 65,
-            repeat: Infinity,
-            ease: "linear",
-            delay: 10,
-          }}
-          className="absolute z-0 opacity-10 pointer-events-none drop-shadow-[0_0_50px_rgba(20,184,166,0.3)] scale-x-[-1]"
-        >
-          <Satellite
-            className="w-[200px] h-[200px] md:w-[450px] md:h-[450px] text-zinc-600/30"
-            strokeWidth={0.5}
-          />
-        </motion.div>
-
-        {/* Perspective Grid with Scanning Laser */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.08)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_10%,transparent_100%)] [transform:rotateX(60deg)_scale(2.5)] origin-bottom opacity-40" />
-
-        <motion.div
-          animate={{ top: ["0%", "100%"] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          className="absolute left-0 right-0 h-[2px] bg-emerald-400 shadow-[0_0_20px_#34d399] opacity-30 z-0"
-        />
-
-        {/* Floating Abstract Tech Elements */}
-        <motion.div
-          animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[25%] left-[10%] hidden lg:flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-white/5 backdrop-blur-md shadow-2xl"
-        >
-          <Satellite className="w-8 h-8 text-emerald-400/80" />
-        </motion.div>
-
-        <motion.div
-          animate={{ y: [0, 25, 0], rotate: [0, -10, 0] }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-          className="absolute bottom-[35%] right-[10%] hidden lg:flex items-center justify-center w-20 h-20 rounded-full bg-zinc-900/50 border border-white/5 backdrop-blur-md shadow-2xl"
-        >
-          <ShieldAlert className="w-10 h-10 text-cyan-400/80" />
-        </motion.div>
-
-        <motion.div
-          animate={{ y: [0, -15, 0], scale: [1, 1.05, 1] }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-          className="absolute top-[20%] right-[20%] hidden md:flex items-center justify-center w-14 h-14 rounded-xl bg-zinc-900/50 border border-white/5 backdrop-blur-md shadow-2xl"
-        >
-          <Activity className="w-7 h-7 text-teal-400/80" />
-        </motion.div>
-      </div>
-
-      {/*
-        ========================================
-        Main Hero Content
-        ========================================
-      */}
-      <div className="container relative z-20 mx-auto px-6 text-center max-w-5xl">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="relative inline-block"
-        >
-          {/* Status Pill */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="group relative inline-flex items-center gap-3 px-4 py-2 rounded-full border border-emerald-500/20 bg-zinc-900/80 backdrop-blur-xl text-emerald-300 text-xs sm:text-sm font-medium tracking-wide shadow-[0_0_30px_rgba(16,185,129,0.1)] hover:border-emerald-500/40 hover:bg-zinc-800/80 transition-all duration-300 cursor-default">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-              </span>
-              Autoencoder Pipeline Live
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </div>
+      <div className="mx-auto grid w-full min-w-0 max-w-7xl items-center gap-16 lg:grid-cols-[1.02fr_.98fr]">
+        <div className="min-w-0 max-w-full">
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-3 py-1.5 text-xs font-medium text-emerald-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
+            Calibrated model ready for analysis
           </div>
 
-          {/* Main Headline */}
-          <h1
-            style={{ fontFamily: "'Bruno Ace SC', sans-serif" }}
-            className="text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-zinc-200 to-zinc-600 tracking-[0.1em] md:tracking-[0.2em] uppercase leading-tight mb-8 pb-2 drop-shadow-2xl"
-          >
-            SATELLITE
-            <br />
-            ANOMALY
-            <br />
-            <span className="relative inline-block mt-4 md:mt-6">
-              <span className="absolute -inset-2 bg-emerald-500/20 blur-xl rounded-full opacity-50" />
-              <span className="relative text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500 tracking-[0.15em] md:tracking-[0.3em] ml-2">
-                DETECTION
-              </span>
-            </span>
+          <h1 className="max-w-3xl text-5xl font-semibold leading-[.98] tracking-[-.055em] text-white sm:text-6xl lg:text-[76px]">
+            Find the scenes that{" "}
+            <span className="text-emerald-300">don’t belong.</span>
           </h1>
-
-          {/* Subheadline */}
-          <p className="mt-4 text-lg md:text-xl lg:text-2xl text-zinc-400 max-w-3xl mx-auto leading-relaxed mb-12 font-light">
-            Harness unsupervised deep learning to process high-resolution
-            satellite imagery. Pinpoint deforestation, illegal infrastructure,
-            and ecological shifts instantly.
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-zinc-400 md:text-xl">
+            A one-class convolutional autoencoder turns satellite imagery into a
+            reconstruction score and a visual error map—so unfamiliar land cover
+            is easier to inspect.
           </p>
-        </motion.div>
 
-        {/* Call To Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-5"
-        >
-          {/* Primary CTA */}
-          <Link
-            to="/dashboard"
-            className="group relative flex items-center justify-center gap-3 px-8 py-4 w-full sm:w-auto bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-500 text-white font-bold text-lg rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-10px_rgba(16,185,129,0.8)] shadow-[0_0_20px_-5px_rgba(16,185,129,0.5)] border border-emerald-300/30"
-          >
-            {/* Shimmer Effect */}
-            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
-            <Crosshair className="w-5 h-5 relative z-10" />
-            <span className="relative z-10">Launch Dashboard</span>
-            <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Link
+              to="/dashboard"
+              className="group inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-6 py-3.5 font-semibold text-zinc-950 shadow-[0_14px_50px_-16px_rgba(52,211,153,.7)] transition hover:bg-emerald-300"
+            >
+              Analyze an image{" "}
+              <ArrowRight
+                size={17}
+                className="transition group-hover:translate-x-1"
+              />
+            </Link>
+            <a
+              href="#benchmark"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[.035] px-6 py-3.5 font-medium text-zinc-200 transition hover:border-white/25 hover:bg-white/[.07]"
+            >
+              View benchmark evidence
+            </a>
+          </div>
 
-          {/* Secondary CTA */}
-          <a
-            href="#demo"
-            className="group relative flex items-center justify-center gap-2 px-8 py-4 w-full sm:w-auto bg-zinc-800/80 border border-zinc-500/50 backdrop-blur-xl text-zinc-100 font-bold text-lg rounded-2xl hover:bg-zinc-700 hover:text-white hover:border-zinc-400 transition-all duration-300 shadow-[0_0_15px_-5px_rgba(0,0,0,0.5)] overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <span className="relative z-10">Watch Demo</span>
-            <ChevronRight className="w-5 h-5 relative z-10 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-          </a>
-        </motion.div>
+          <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs text-zinc-500">
+            {["Runs locally", "Saved calibration", "Explainable heatmap"].map(
+              (item) => (
+                <span key={item} className="flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                  {item}
+                </span>
+              ),
+            )}
+          </div>
+        </div>
+
+        <div className="relative min-w-0 max-w-full overflow-hidden rounded-[28px]">
+          <div className="absolute -inset-8 -z-10 rounded-full bg-emerald-400/10 blur-3xl" />
+          <div className="overflow-hidden rounded-[28px] border border-white/12 bg-[#0b0e0d] shadow-2xl shadow-black/60">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/8 px-5 py-4">
+              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <ScanLine size={15} className="text-emerald-400" />
+                Live reconstruction
+              </div>
+              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-emerald-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Model online
+              </div>
+            </div>
+            <div className="grid gap-4 p-4 sm:grid-cols-[1fr_155px]">
+              <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-white/8 bg-[radial-gradient(circle_at_68%_34%,rgba(249,115,22,.85)_0_4%,transparent_5%),radial-gradient(circle_at_54%_59%,rgba(239,68,68,.8)_0_7%,transparent_8%),linear-gradient(142deg,#10251d_0%,#1b3b2b_28%,#172f24_29%,#294334_50%,#101d18_51%,#20382b_72%,#0c1713_100%)]">
+                <div className="absolute inset-0 opacity-70 [background-image:repeating-linear-gradient(25deg,transparent_0_18px,rgba(255,255,255,.035)_19px_20px)]" />
+                <div className="absolute left-[47%] top-[51%] h-28 w-36 rounded-full border border-orange-300/50 bg-red-500/15 blur-sm" />
+                <div className="absolute inset-x-4 bottom-4 flex items-center justify-between rounded-xl border border-white/10 bg-black/55 px-3 py-2 backdrop-blur-md">
+                  <span className="text-xs text-zinc-300">
+                    Reconstruction error overlay
+                  </span>
+                  <span className="text-xs font-mono text-amber-300">
+                    0.054032
+                  </span>
+                </div>
+              </div>
+              <div className="grid content-start gap-3">
+                <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[.07] p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-amber-200/70">
+                    Classification
+                  </p>
+                  <p className="mt-3 text-lg font-semibold text-amber-300">
+                    Anomaly
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-white/[.025] p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                    Threshold
+                  </p>
+                  <p className="mt-3 font-mono text-sm text-zinc-200">
+                    0.000483
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-white/[.025] p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                    Architecture
+                  </p>
+                  <p className="mt-3 text-sm text-zinc-200">Compact CAE</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/[.05] p-4 text-xs leading-5 text-emerald-100/70">
+                  <Sparkles size={15} className="mb-2 text-emerald-300" />
+                  Heatmaps expose reconstruction error, not a hazard label.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/*
-        ========================================
-        Bottom Fade Alpha Matte
-        ========================================
-      */}
-      <div className="absolute bottom-0 w-full h-48 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent z-10 pointer-events-none" />
+      <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 divide-y divide-white/8 border-y border-white/8 bg-white/[.018] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        {facts.map(([value, label]) => (
+          <div key={label} className="px-3 py-5 text-center">
+            <p className="text-sm font-semibold text-white sm:text-lg">
+              {value}
+            </p>
+            <p className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600 sm:text-xs">
+              {label}
+            </p>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

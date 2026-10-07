@@ -4,6 +4,7 @@ dist/
 
 # Logs and local configuration
 *.log
+.runlogs/
 .env*.local
 .DS_Store
 *.pem
